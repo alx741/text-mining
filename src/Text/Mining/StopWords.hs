@@ -1,4 +1,16 @@
-module Text.Mining.StopWords where
+module Text.Mining.StopWords
+    (
+    -- * Stop words removal preserving diacritics
+      StopWordsLexicon
+    , removeStopWords
+    , readLexiconFile
+
+    -- * Stop words removal ignoring diacritics
+    , StopWordsLexiconNoDiacritics
+    , removeStopWordsIgnoreDiacritics
+    , readLexiconFileIgnoreDiacritics
+    )
+    where
 
 import Data.Set     (Set, fromList, member)
 import Data.Text    as T (Text, map, toLower, unwords, words)
@@ -20,15 +32,15 @@ removeStopWordsIgnoreDiacritics lexicon
     . filter (\w -> not $ (removeDiacritics . toLower) w `member` lexicon)
     . words
 
-loadLexiconFile :: FilePath -> IO StopWordsLexicon
-loadLexiconFile fp
+readLexiconFile :: FilePath -> IO StopWordsLexicon
+readLexiconFile fp
     = fromList
     . fmap toLower
     . words
     <$> readFile fp
 
-loadLexiconFileIgnoreDiacritics :: FilePath -> IO StopWordsLexiconNoDiacritics
-loadLexiconFileIgnoreDiacritics fp
+readLexiconFileIgnoreDiacritics :: FilePath -> IO StopWordsLexiconNoDiacritics
+readLexiconFileIgnoreDiacritics fp
     = fromList
     . fmap (removeDiacritics . toLower)
     . words
