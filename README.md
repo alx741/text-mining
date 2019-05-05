@@ -6,6 +6,5 @@ Basic text mining computations
 
 - Stop words removal
 - Stemming
-- Multi-language
     - English
     - Spanish
