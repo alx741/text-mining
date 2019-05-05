@@ -1,6 +1,6 @@
 # A Haskell text mining library
 
-![Logo](./logo/logo.png)
+<img alt="logo" src="./logo/logo.png" width="200">
 
 Basic text mining computations
 
