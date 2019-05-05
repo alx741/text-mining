@@ -4,11 +4,13 @@ module Text.Mining.StopWords
       StopWordsLexicon
     , removeStopWords
     , readLexiconFile
+    , lexiconFromList
 
     -- * Stop words removal ignoring diacritics
     , StopWordsLexiconNoDiacritics
     , removeStopWordsIgnoreDiacritics
     , readLexiconFileIgnoreDiacritics
+    , lexiconFromListIgnoreDiacritics
     )
     where
 
@@ -31,6 +33,12 @@ removeStopWordsIgnoreDiacritics lexicon
     = unwords
     . filter (\w -> not $ (removeDiacritics . toLower) w `member` lexicon)
     . words
+
+lexiconFromList :: [Text] -> StopWordsLexicon
+lexiconFromList = fromList . fmap toLower
+
+lexiconFromListIgnoreDiacritics :: [Text] -> StopWordsLexiconNoDiacritics
+lexiconFromListIgnoreDiacritics = fromList . fmap (removeDiacritics . toLower)
 
 readLexiconFile :: FilePath -> IO StopWordsLexicon
 readLexiconFile fp
