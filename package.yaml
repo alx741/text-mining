@@ -18,7 +18,6 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - vector
-- aeson
 - probability
 - containers
 - unordered-containers
@@ -47,3 +46,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - text-mining
+    - hspec
