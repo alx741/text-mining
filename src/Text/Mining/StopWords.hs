@@ -19,37 +19,42 @@ import Data.Text    as T (Text, map, toLower, unwords, words)
 import Data.Text.IO (readFile)
 import Prelude      hiding (readFile, unwords, words)
 
-type StopWordsLexicon = Set Text
-type StopWordsLexiconNoDiacritics = Set Text
+data StopWordsLexicon = StopWordsLexicon (Set Text)
+data StopWordsLexiconNoDiacritics = StopWordsLexiconNoDiacritics (Set Text)
 
 removeStopWords :: StopWordsLexicon -> Text -> Text
-removeStopWords lexicon
+removeStopWords (StopWordsLexicon lexicon)
     = unwords
     . filter (\w -> not $ toLower w `member` lexicon)
     . words
 
 removeStopWordsIgnoreDiacritics :: StopWordsLexiconNoDiacritics -> Text -> Text
-removeStopWordsIgnoreDiacritics lexicon
+removeStopWordsIgnoreDiacritics (StopWordsLexiconNoDiacritics lexicon)
     = unwords
     . filter (\w -> not $ (removeDiacritics . toLower) w `member` lexicon)
     . words
 
 lexiconFromList :: [Text] -> StopWordsLexicon
-lexiconFromList = fromList . fmap toLower
+lexiconFromList = StopWordsLexicon . fromList . fmap toLower
 
 lexiconFromListIgnoreDiacritics :: [Text] -> StopWordsLexiconNoDiacritics
-lexiconFromListIgnoreDiacritics = fromList . fmap (removeDiacritics . toLower)
+lexiconFromListIgnoreDiacritics
+    = StopWordsLexiconNoDiacritics
+    . fromList
+    . fmap (removeDiacritics . toLower)
 
 readLexiconFile :: FilePath -> IO StopWordsLexicon
 readLexiconFile fp
-    = fromList
+    = StopWordsLexicon
+    . fromList
     . fmap toLower
     . words
     <$> readFile fp
 
 readLexiconFileIgnoreDiacritics :: FilePath -> IO StopWordsLexiconNoDiacritics
 readLexiconFileIgnoreDiacritics fp
-    = fromList
+    = StopWordsLexiconNoDiacritics
+    . fromList
     . fmap (removeDiacritics . toLower)
     . words
     <$> readFile fp
