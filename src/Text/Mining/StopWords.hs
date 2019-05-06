@@ -21,7 +21,7 @@ module Text.Mining.StopWords
     where
 
 import Data.Set     (Set, fromList, member)
-import Data.Text    as T (Text, map, toLower, unwords, words)
+import Data.Text    as T (Text, map, strip, toLower, unwords, words)
 import Data.Text.IO (readFile)
 import Prelude      hiding (readFile, unwords, words)
 
@@ -48,13 +48,13 @@ removeStopWordsIgnoreDiacritics (StopWordsLexiconNoDiacritics lexicon)
     . words
 
 lexiconFromList :: [Text] -> StopWordsLexicon
-lexiconFromList = StopWordsLexicon . fromList . fmap toLower
+lexiconFromList = StopWordsLexicon . fromList . fmap (strip . toLower)
 
 lexiconFromListIgnoreDiacritics :: [Text] -> StopWordsLexiconNoDiacritics
 lexiconFromListIgnoreDiacritics
     = StopWordsLexiconNoDiacritics
     . fromList
-    . fmap (removeDiacritics . toLower)
+    . fmap (removeDiacritics . strip . toLower)
 
 -- | Read a 'StopWordsLexicon' from a *one word per line* file
 readLexiconFile :: FilePath -> IO StopWordsLexicon
