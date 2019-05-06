@@ -1,3 +1,13 @@
+-- | Remove the Stop Words in a 'StopWordsLexicon' from a text corpus.
+--
+-- In some languages and in some scenarios it becomes useful to ignore
+-- diacritics as the source of the text might or might not contain them properly
+-- Spanish is such a language and ASR is such a scenario. For those use a
+-- 'StopWordsLexiconNoDiacritics'.
+--
+-- An assortment of stop words lexica can be found together with the code of
+-- this library: https://github.com/alx741/text-mining_haskell/tree/master/data
+
 module Text.Mining.StopWords
     (
     -- * Stop words removal preserving diacritics
