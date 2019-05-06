@@ -1,4 +1,4 @@
--- | Remove the Stop Words of a text.
+-- | Remove stop words in a text.
 --
 -- An assortment of stop words lexica can be found together with the code of
 -- this library:
@@ -56,14 +56,14 @@ lexiconFromListIgnoreDiacritics
     . fromList
     . fmap (removeDiacritics . strip . toLower)
 
--- | Read a 'StopWordsLexicon' from a *one word per line* file
+-- | Read a 'StopWordsLexicon' from a /one word per line/ file
 readLexiconFile :: FilePath -> IO StopWordsLexicon
 readLexiconFile fp
     = lexiconFromList
     . words
     <$> readFile fp
 
--- | Read a 'StopWordsLexiconNoDiacritics' from a *one word per line* file
+-- | Read a 'StopWordsLexiconNoDiacritics' from a /one word per line/ file
 readLexiconFileIgnoreDiacritics :: FilePath -> IO StopWordsLexiconNoDiacritics
 readLexiconFileIgnoreDiacritics fp
     = lexiconFromListIgnoreDiacritics
