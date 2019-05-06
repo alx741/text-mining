@@ -54,19 +54,17 @@ lexiconFromListIgnoreDiacritics
     . fromList
     . fmap (removeDiacritics . toLower)
 
+-- | Read a 'StopWordsLexicon' from a one word per line file
 readLexiconFile :: FilePath -> IO StopWordsLexicon
 readLexiconFile fp
-    = StopWordsLexicon
-    . fromList
-    . fmap toLower
+    = lexiconFromList
     . words
     <$> readFile fp
 
+-- | Read a 'StopWordsLexiconNoDiacritics' from a one word per line file
 readLexiconFileIgnoreDiacritics :: FilePath -> IO StopWordsLexiconNoDiacritics
 readLexiconFileIgnoreDiacritics fp
-    = StopWordsLexiconNoDiacritics
-    . fromList
-    . fmap (removeDiacritics . toLower)
+    = lexiconFromListIgnoreDiacritics
     . words
     <$> readFile fp
 
