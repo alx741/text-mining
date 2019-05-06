@@ -1,9 +1,4 @@
--- | Remove the Stop Words in a 'StopWordsLexicon' from a text corpus.
---
--- In some languages and in some scenarios it becomes useful to ignore
--- diacritics as the source of the text might or might not contain them properly
--- Spanish is such a language and ASR is such a scenario. For those use a
--- 'StopWordsLexiconNoDiacritics'.
+-- | Remove the Stop Words of a text.
 --
 -- An assortment of stop words lexica can be found together with the code of
 -- this library:
@@ -11,7 +6,7 @@
 
 module Text.Mining.StopWords
     (
-    -- * Stop words removal preserving diacritics
+    -- * Stop words removal
       StopWordsLexicon
     , removeStopWords
     , readLexiconFile
@@ -30,8 +25,15 @@ import Data.Text    as T (Text, map, toLower, unwords, words)
 import Data.Text.IO (readFile)
 import Prelude      hiding (readFile, unwords, words)
 
+
 data StopWordsLexicon = StopWordsLexicon (Set Text)
+
+-- | In some languages and in some scenarios it becomes useful to ignore
+-- diacritics, as the source of the text might or might not contain them
+-- properly. Spanish is such a language and ASR is such a scenario. For those
+-- use a 'StopWordsLexiconNoDiacritics'.
 data StopWordsLexiconNoDiacritics = StopWordsLexiconNoDiacritics (Set Text)
+
 
 removeStopWords :: StopWordsLexicon -> Text -> Text
 removeStopWords (StopWordsLexicon lexicon)
@@ -54,14 +56,14 @@ lexiconFromListIgnoreDiacritics
     . fromList
     . fmap (removeDiacritics . toLower)
 
--- | Read a 'StopWordsLexicon' from a one word per line file
+-- | Read a 'StopWordsLexicon' from a *one word per line* file
 readLexiconFile :: FilePath -> IO StopWordsLexicon
 readLexiconFile fp
     = lexiconFromList
     . words
     <$> readFile fp
 
--- | Read a 'StopWordsLexiconNoDiacritics' from a one word per line file
+-- | Read a 'StopWordsLexiconNoDiacritics' from a *one word per line* file
 readLexiconFileIgnoreDiacritics :: FilePath -> IO StopWordsLexiconNoDiacritics
 readLexiconFileIgnoreDiacritics fp
     = lexiconFromListIgnoreDiacritics
