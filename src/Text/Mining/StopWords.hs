@@ -6,7 +6,8 @@
 -- 'StopWordsLexiconNoDiacritics'.
 --
 -- An assortment of stop words lexica can be found together with the code of
--- this library: https://github.com/alx741/text-mining_haskell/tree/master/data
+-- this library:
+-- https://github.com/alx741/text-mining_haskell/tree/master/data/stopwords
 
 module Text.Mining.StopWords
     (
