@@ -21,10 +21,11 @@ module Text.Mining.StopWords
     where
 
 import Data.Set     (Set, fromList, member)
-import Data.Text    as T (Text, map, strip, toLower, unwords, words)
+import Data.Text    (Text, strip, toLower, unwords, words)
 import Data.Text.IO (readFile)
 import Prelude      hiding (readFile, unwords, words)
 
+import Text.Mining.Diacritics (removeDiacritics)
 
 data StopWordsLexicon = StopWordsLexicon (Set Text)
 
@@ -69,37 +70,3 @@ readLexiconFileIgnoreDiacritics fp
     = lexiconFromListIgnoreDiacritics
     . words
     <$> readFile fp
-
-removeDiacritics :: Text -> Text
-removeDiacritics = T.map unDiacritic
-    where
-        unDiacritic :: Char -> Char
-        -- Acute accent
-        unDiacritic 'Á' = 'A'
-        unDiacritic 'É' = 'E'
-        unDiacritic 'Í' = 'I'
-        unDiacritic 'Ó' = 'O'
-        unDiacritic 'Ú' = 'U'
-        unDiacritic 'á' = 'a'
-        unDiacritic 'é' = 'e'
-        unDiacritic 'í' = 'i'
-        unDiacritic 'ó' = 'o'
-        unDiacritic 'ú' = 'u'
-
-        -- Diaeresis
-        unDiacritic 'Ä' = 'A'
-        unDiacritic 'Ë' = 'E'
-        unDiacritic 'Ï' = 'I'
-        unDiacritic 'Ö' = 'O'
-        unDiacritic 'Ü' = 'U'
-        unDiacritic 'ä' = 'a'
-        unDiacritic 'ë' = 'e'
-        unDiacritic 'ï' = 'i'
-        unDiacritic 'ö' = 'o'
-        unDiacritic 'ü' = 'u'
-
-        -- Tilde
-        unDiacritic 'Ñ' = 'N'
-        unDiacritic 'ñ' = 'n'
-
-        unDiacritic x   = x
