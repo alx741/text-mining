@@ -2,15 +2,39 @@
 
 module Text.Mining.Stemming where
 
-import Data.Text (Text, pack, unpack)
+import Data.Maybe (catMaybes)
+import Data.Text  (Text, breakOn, pack, stripSuffix, unpack)
+import Safe       (headMay)
+
+import Text.Mining.Diacritics (removeDiacritics)
 
 spanishStem :: Text -> Text
 spanishStem = undefined
 
+removeAttachedPronoun :: Text -> Text
+removeAttachedPronoun t =
+    case matchPreffix t of
+        Nothing -> t
+        Just (start, preffix) ->
+            case stripSuffixes preffix of
+                Nothing  -> start <> removeDiacritics preffix
+                Just end -> start <> end
+    where
+    matchPreffix t = headMay
+        $ filter (\(_, preffix) -> preffix /= "")
+        $ fmap (`breakOn` t) preffixes
+    stripSuffixes t = headMay $ catMaybes $ fmap (`stripSuffix` t) suffixes
+    preffixes =
+        [ "iéndo", "ándo", "ár", "ér", "ír"
+        , "iendo", "ando", "ar", "er", "ir", "yendo"]
+    suffixes =
+        [ "me", "se", "sela", "selo", "selas", "selos"
+        , "la", "le", "lo", "las", "les", "los", "nos"]
+
 spanishRV :: String -> String
 spanishRV [x,y] = x:[y]
 spanishRV (x:y:xs)
-    | not (isVowel y) = dropWhile (isVowel) xs
+    | not (isVowel y) = dropWhile isVowel xs
     | isVowel x && isVowel y = dropWhile (not . isVowel) xs
     | otherwise = tail xs
     where

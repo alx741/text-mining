@@ -21,6 +21,7 @@ dependencies:
 - probability
 - containers
 - unordered-containers
+- safe
 
 library:
   source-dirs: src
