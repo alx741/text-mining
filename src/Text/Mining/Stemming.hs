@@ -6,14 +6,45 @@ import Data.Bool  (bool)
 import Data.List  (sortOn)
 import Data.Maybe (mapMaybe)
 import Data.Ord   (Down (..))
-import Data.Text  as T (Text, breakOn, cons, dropEnd, isSuffixOf, length, pack,
-                        replace, span, splitAt, stripSuffix, takeEnd, unpack)
+import Data.Text  as T (Text, breakOn, cons, dropEnd, head, isSuffixOf, length,
+                        pack, replace, span, splitAt, stripSuffix, takeEnd,
+                        unpack)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeDiacritics)
 
 spanishStem :: Text -> Text
 spanishStem = undefined
+
+
+-- FIXME: Use longestSuffix
+-- | Step 0: Attached pronoun
+removeAttachedPronoun :: Text -> Text
+removeAttachedPronoun t =
+    case matchPrefix rv of
+        Nothing -> t
+        Just (start, prefix) ->
+            case stripSuffixes prefix of
+                Nothing  -> base <> start <> prefix
+                Just end -> base <> start <> removeDiacritics end
+    where
+    (base, rv) = regionRV t
+
+    matchPrefix t' = headMay
+        $ filter (\(_, prefix) -> prefix /= "")
+        $ fmap (`breakOn` t') prefixes
+
+    stripSuffixes t' = headMay $ mapMaybe (`stripSuffix` t') suffixes
+
+    prefixes =
+        [ "iéndo", "ándo", "ár", "ér", "ír"
+        , "iendo", "ando", "ar", "er", "ir", "uyendo"
+        ]
+
+    suffixes =
+        [ "me", "se", "sela", "selo", "selas", "selos"
+        , "la", "le", "lo", "las", "les", "los", "nos"
+        ]
 
 
 -- | Step 1: Standard suffix removal
@@ -86,33 +117,32 @@ removeStandardSuffix t =
             ["iva", "ivo", "ivas", "ivos"]
 
 
--- FIXME: Use longestSuffix
-removeAttachedPronoun :: Text -> Text
-removeAttachedPronoun t =
-    case matchPrefix rv of
+
+-- | Step 3: Residual suffix
+removeResidualSuffix :: Text -> Text
+removeResidualSuffix t =
+    case longestSuffix allSuffixes rv of
         Nothing -> t
-        Just (start, prefix) ->
-            case stripSuffixes prefix of
-                Nothing  -> base <> start <> prefix
-                Just end -> base <> start <> removeDiacritics end
+        Just suffix
+            | suffix `elem` suffixesCase1 -> base <> dropSuffix suffix rv
+            | suffix `elem` suffixesCase2 ->
+                let stripped = base <> dropSuffix suffix rv
+                in bool
+                    stripped
+                    (dropSuffix "gu" stripped)
+                    ("gu" `isSuffixOf` stripped && T.head rv == 'u')
+            | otherwise -> t
     where
-    (base, rv) = regionRV t
+        (base, rv) = regionRV t
 
-    matchPrefix t' = headMay
-        $ filter (\(_, prefix) -> prefix /= "")
-        $ fmap (`breakOn` t') prefixes
+        allSuffixes = suffixesCase1 <> suffixesCase2
 
-    stripSuffixes t' = headMay $ mapMaybe (`stripSuffix` t') suffixes
+        suffixesCase1 = -- Remove if in RV
+            ["os", "a", "o", "á", "í", "ó"]
 
-    prefixes =
-        [ "iéndo", "ándo", "ár", "ér", "ír"
-        , "iendo", "ando", "ar", "er", "ir", "uyendo"
-        ]
+        suffixesCase2 = -- Remove if in RV, if prefixed by "gu" remove "u" in RV
+            ["e", "é"]
 
-    suffixes =
-        [ "me", "se", "sela", "selo", "selas", "selos"
-        , "la", "le", "lo", "las", "les", "los", "nos"
-        ]
 
 
 regionRV :: Text -> (Text, Text)
