@@ -54,7 +54,7 @@ removeAttachedPronoun t =
 removeStandardSuffix :: Text -> Text
 removeStandardSuffix t =
     case longestSuffix allSuffixes r2 of
-        Nothing -> t -- FIXME: do step 2a
+        Nothing -> removeYVerbSuffixes t
         Just suffix
             | suffix `elem` suffixesCase1 -> base <> dropSuffix suffix r2
             | suffix `elem` suffixesCase2 -> dropSuffix "ic" $ base <> dropSuffix suffix r2
@@ -71,7 +71,7 @@ removeStandardSuffix t =
                 let stripped = base <> dropSuffix suffix r2
                 in dropLongestSuffix ["abil", "ic", "iv"] stripped
             | suffix `elem` suffixesCase9 -> dropSuffix "at" $ base <> dropSuffix suffix r2
-            | otherwise -> undefined -- do step 2a
+            | otherwise -> removeYVerbSuffixes t
     where
         (base, r2) = regionR2 spanishVowels t
 
@@ -139,7 +139,40 @@ removeYVerbSuffixes t =
 
 -- | Step 2b: Verb suffixes beginning with 'y'
 removeOtherVerbSuffixes :: Text -> Text
-removeOtherVerbSuffixes = undefined
+removeOtherVerbSuffixes t =
+    case longestSuffix allSuffixes rv of
+        Nothing -> t
+        Just suffix
+            | suffix `elem` suffixesCase1 ->
+                let stripped = base <> dropSuffix suffix rv
+                in bool
+                    stripped
+                    (dropSuffix "u" stripped)
+                    ("gu" `isSuffixOf` stripped)
+            | suffix `elem` suffixesCase2 -> base <> dropSuffix suffix rv
+            | otherwise -> t
+    where
+        (base, rv) = regionRV t
+
+        allSuffixes = suffixesCase1 <> suffixesCase2
+
+        suffixesCase1 = -- Remove if in RV, remove 'u' if preceded by "gu"
+            ["en", "es", "éis", "emos"]
+
+        suffixesCase2 = -- Remove if in RV
+            [ "arían", "arías", "arán", "arás", "aríais", "aría", "aréis"
+            , "aríamos", "aremos", "ará", "aré", "erían", "erías", "erán"
+            , "erás", "eríais", "ería", "eréis", "eríamos", "eremos", "erá"
+            , "eré", "irían", "irías", "irán", "irás", "iríais", "iría"
+            , "iréis", "iríamos", "iremos", "irá", "iré", "aba", "ada", "ida"
+            , "ía", "ara", "iera", "ad", "ed", "id", "ase", "iese", "aste"
+            , "iste", "an", "aban", "ían", "aran", "ieran", "asen", "iesen"
+            , "aron", "ieron", "ado", "ido", "ando", "iendo", "ió", "ar", "er"
+            , "ir", "as", "abas", "adas", "idas", "ías", "aras", "ieras"
+            , "ases", "ieses", "ís", "áis", "abais", "íais", "arais", "ierais"
+            , "aseis", "ieseis", "asteis", "isteis", "ados", "idos", "amos"
+            , "ábamos", "íamos", "imos", "áramos", "iéramos", "iésemos", "ásemos"
+            ]
 
 
 -- | Step 3: Residual suffix
