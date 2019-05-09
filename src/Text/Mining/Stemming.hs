@@ -3,7 +3,7 @@
 module Text.Mining.Stemming where
 
 import Data.Maybe (catMaybes)
-import Data.Text  (Text, breakOn, pack, stripSuffix, unpack)
+import Data.Text  as T (Text, breakOn, pack, span, stripSuffix, unpack, splitAt, cons)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeDiacritics)
@@ -31,15 +31,22 @@ removeAttachedPronoun t =
         [ "me", "se", "sela", "selo", "selas", "selos"
         , "la", "le", "lo", "las", "les", "los", "nos"]
 
-spanishRV :: String -> String
-spanishRV [x,y] = x:[y]
-spanishRV (x:y:xs)
-    | not (isVowel y) = dropWhile isVowel xs
-    | isVowel x && isVowel y = dropWhile (not . isVowel) xs
-    | otherwise = tail xs
+regionRV :: Text -> (Text, Text)
+regionRV = takeRV . unpack
     where
+        takeRV :: String -> (Text, Text)
+        takeRV [x,y] = (pack $ x:[y], "")
+        takeRV word@(x:y:xs)
+            | not (isVowel y) =
+                let (preffix, region) = T.span isVowel $ pack xs
+                in (x `cons` y `cons` preffix, region)
+            | isVowel x && isVowel y =
+                let (preffix, region) = T.span (not . isVowel) $ pack xs
+                in (x `cons` y `cons` preffix, region)
+            | otherwise = T.splitAt 3 $ pack word
+        takeRV word = (pack word, "")
+
         isVowel = flip elem spanishVowels
-spanishRV word = word
 
 -- | Take the regionns /(R1, R2)/ of a word.
 --
