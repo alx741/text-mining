@@ -14,8 +14,7 @@ import Safe       (headMay)
 import Text.Mining.Diacritics (removeAcuteAccents, removeAllDiacritics)
 
 stem :: Text -> Text
-stem
-    = removeAcuteAccents
+stem = removeAcuteAccents
     . removeResidualSuffix
     . removeStandardSuffix
     . removeAttachedPronoun
@@ -55,7 +54,7 @@ removeAttachedPronoun t =
 removeStandardSuffix :: Text -> Text
 removeStandardSuffix t =
     case longestSuffix allSuffixes r2 of
-        Nothing -> t
+        Nothing -> t -- FIXME: do step 2a
         Just suffix
             | suffix `elem` suffixesCase1 -> base <> dropSuffix suffix r2
             | suffix `elem` suffixesCase2 -> dropSuffix "ic" $ base <> dropSuffix suffix r2
@@ -120,6 +119,27 @@ removeStandardSuffix t =
         suffixesCase9 = -- Remove if in R2, remove "at" prefix
             ["iva", "ivo", "ivas", "ivos"]
 
+
+-- | Step 2a: Verb suffixes beginning with 'y'
+removeYVerbSuffixes :: Text -> Text
+removeYVerbSuffixes t =
+    case longestSuffix suffixes rv of
+        Nothing -> removeOtherVerbSuffixes t
+        Just suffix ->
+            let stripped = base <> dropSuffix suffix rv
+            in bool (removeOtherVerbSuffixes t) stripped ("u" `isSuffixOf` stripped)
+    where
+        (base, rv) = regionRV t
+
+        suffixes = -- Remove if in RV and preceded by 'u'
+            [ "ya", "ye", "yan", "yen", "yeron", "yendo"
+            , "yo", "yó", "yas", "yes", "yais", "yamos"
+            ]
+
+
+-- | Step 2b: Verb suffixes beginning with 'y'
+removeOtherVerbSuffixes :: Text -> Text
+removeOtherVerbSuffixes = undefined
 
 
 -- | Step 3: Residual suffix
