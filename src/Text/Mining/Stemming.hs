@@ -4,11 +4,10 @@ module Text.Mining.Stemming where
 
 import Data.Bool  (bool)
 import Data.List  (sortOn)
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (mapMaybe)
 import Data.Ord   (Down (..))
-import Data.Text  as T (Text, breakOn, cons, dropEnd, init, isSuffixOf, last,
-                        length, pack, replace, span, splitAt, stripSuffix,
-                        takeEnd, unpack)
+import Data.Text  as T (Text, breakOn, cons, dropEnd, isSuffixOf, length, pack,
+                        replace, span, splitAt, stripSuffix, takeEnd, unpack)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeDiacritics)
@@ -37,9 +36,10 @@ removeStandardSuffix t =
             | suffix `elem` suffixesCase8 ->
                 let stripped = base <> dropSuffix suffix r2
                 in dropLongestSuffix ["abil", "ic", "iv"] stripped
-            | suffix `elem` suffixesCase9 -> undefined
+            | suffix `elem` suffixesCase9 -> dropSuffix "at" $ base <> dropSuffix suffix r2
+            | otherwise -> undefined -- do step 2a
     where
-        whole@(base, r2) = undefined
+        (base, r2) = undefined
 
         allSuffixes
             =  suffixesCase1 <> suffixesCase2 <> suffixesCase3
@@ -98,11 +98,11 @@ removeAttachedPronoun t =
     where
     (base, rv) = regionRV t
 
-    matchPrefix t = headMay
+    matchPrefix t' = headMay
         $ filter (\(_, prefix) -> prefix /= "")
-        $ fmap (`breakOn` t) prefixes
+        $ fmap (`breakOn` t') prefixes
 
-    stripSuffixes t = headMay $ mapMaybe (`stripSuffix` t) suffixes
+    stripSuffixes t' = headMay $ mapMaybe (`stripSuffix` t') suffixes
 
     prefixes =
         [ "iéndo", "ándo", "ár", "ér", "ír"
