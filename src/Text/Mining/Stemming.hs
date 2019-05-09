@@ -21,10 +21,7 @@ removeAttachedPronoun t =
                 Nothing  -> base <> start <> prefix
                 Just end -> base <> start <> removeDiacritics end
     where
-    -- Match prefix in RV + one preceding character in order to match the case
-    -- of "yendo" following 'u' that could be right before RV
-    (base, rv) = let (base', rv') = regionRV t
-        in (T.init base', T.last base' `cons` rv')
+    (base, rv) = regionRV t
 
     matchPrefix t = headMay
         $ filter (\(_, prefix) -> prefix /= "")
@@ -34,11 +31,13 @@ removeAttachedPronoun t =
 
     prefixes =
         [ "iéndo", "ándo", "ár", "ér", "ír"
-        , "iendo", "ando", "ar", "er", "ir", "uyendo"]
+        , "iendo", "ando", "ar", "er", "ir", "uyendo"
+        ]
 
     suffixes =
         [ "me", "se", "sela", "selo", "selas", "selos"
-        , "la", "le", "lo", "las", "les", "los", "nos"]
+        , "la", "le", "lo", "las", "les", "los", "nos"
+        ]
 
 
 regionRV :: Text -> (Text, Text)
@@ -57,7 +56,8 @@ regionRV = takeRV . unpack
         takeRV word = (pack word, "")
 
         isVowel :: Char -> Bool
-        isVowel = flip elem spanishVowels
+        isVowel = flip elem
+            ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
 
 -- | Take the regionns /(R1, R2)/ of a word.
 --
@@ -82,9 +82,6 @@ region2 :: [Char] -- ^ List of vowels
  -> Text -- ^ R1 (region1 of a word)
  -> Text -- ^ Region
 region2 vowels = region1 vowels . region1 vowels
-
-spanishVowels :: [Char]
-spanishVowels = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
 
 englishVowels :: [Char]
 englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
