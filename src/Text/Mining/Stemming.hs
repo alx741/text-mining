@@ -6,9 +6,9 @@ import Data.Bool  (bool)
 import Data.List  (sortOn)
 import Data.Maybe (mapMaybe)
 import Data.Ord   (Down (..))
-import Data.Text  as T (Text, breakOn, cons, dropEnd, head, isSuffixOf, length,
-                        pack, replace, snoc, span, splitAt, stripSuffix,
-                        takeEnd, unpack)
+import Data.Text  as T (Text, breakOn, cons, drop, dropEnd, findIndex, head,
+                        isSuffixOf, length, pack, replace, snoc, splitAt,
+                        stripSuffix, take, takeEnd, unpack)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeAcuteAccents, removeAllDiacritics)
@@ -201,7 +201,7 @@ removeResidualSuffix t =
             ["e", "é"]
 
 
-
+-- | Split a word on its Spanish RV region
 regionRV :: Text -> (Text, Text)
 regionRV = takeRV . unpack
     where
@@ -209,16 +209,29 @@ regionRV = takeRV . unpack
         takeRV [x,y] = (pack $ x:[y], "")
         takeRV word@(x:y:xs)
             | not (isVowel y) =
-                let (prefix, region) = T.span isVowel $ pack xs
+                let (prefix, region) = breakOnVowel $ pack xs
                 in (x `cons` y `cons` prefix, region)
             | isVowel x && isVowel y =
-                let (prefix, region) = T.span (not . isVowel) $ pack xs
+                let (prefix, region) = breakOnConsonant $ pack xs
                 in (x `cons` y `cons` prefix, region)
             | otherwise = T.splitAt 3 $ pack word
         takeRV word = (pack word, "")
 
+        breakOnVowel :: Text -> (Text, Text)
+        breakOnVowel = breakOnPredicate isVowel
+
+        breakOnConsonant :: Text -> (Text, Text)
+        breakOnConsonant = breakOnPredicate (not . isVowel)
+
+        breakOnPredicate :: (Char -> Bool) -> Text -> (Text, Text)
+        breakOnPredicate p t = let mn = (+1) <$> findIndex p t
+            in case mn of
+                Nothing -> (t, "")
+                Just n  -> (T.take n t, T.drop n t)
+
         isVowel :: Char -> Bool
         isVowel = flip elem spanishVowels
+
 
 -- | Split a word on its R1 region
 --
