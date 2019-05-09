@@ -7,8 +7,8 @@ import Data.List  (sortOn)
 import Data.Maybe (mapMaybe)
 import Data.Ord   (Down (..))
 import Data.Text  as T (Text, breakOn, cons, dropEnd, head, isSuffixOf, length,
-                        pack, replace, span, splitAt, stripSuffix, takeEnd,
-                        unpack)
+                        pack, replace, snoc, span, splitAt, stripSuffix,
+                        takeEnd, unpack)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeDiacritics)
@@ -164,29 +164,28 @@ regionRV = takeRV . unpack
         isVowel = flip elem
             ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
 
--- | Take the regionns /(R1, R2)/ of a word.
+-- | Split a word on its R1 region
 --
 -- Defined in: http://snowball.tartarus.org/texts/r1r2.html
-regions :: [Char] -- ^ List of vowels
+regionR1 :: [Char] -- ^ Lost of vowels
  -> Text -- ^ Word
- -> (Text, Text) -- ^ Regions (R1, R2)
-regions vowels t = (region1 vowels t, region2 vowels t)
-
-region1 :: [Char] -- ^ List of vowels
- -> Text -- ^ Word
- -> Text -- ^ Region
-region1 vowels = pack . parseRegion vowels . unpack
+ -> (Text, Text) -- ^ (Base, R1)
+regionR1 vowels word = parseRegion (unpack word) ("", "")
     where
-        parseRegion :: [Char] -> String -> String
-        parseRegion vs (x:y:xs)
-            | x `elem` vs && not (y `elem` vs) = xs
-            | otherwise = parseRegion vs (y:xs)
-        parseRegion _ _ = ""
+        parseRegion :: String -> (Text, Text) -> (Text, Text)
+        parseRegion (x:y:xs) (b, r1)
+            | isVowel x && (not . isVowel) y = (b `snoc` x `snoc` y, pack xs)
+            | otherwise = parseRegion (y:xs) (b `snoc` x, r1)
+        parseRegion [x] (b, r1) = (b `snoc` x, r1)
+        parseRegion []  (b, r1) = (b, r1)
 
-region2 :: [Char] -- ^ List of vowels
- -> Text -- ^ R1 (region1 of a word)
- -> Text -- ^ Region
-region2 vowels = region1 vowels . region1 vowels
+        isVowel = flip elem vowels
+
+
+-- region2 :: [Char] -- ^ List of vowels
+-- -> Text -- ^ R1 (region1 of a word)
+-- -> Text -- ^ Region
+-- region2 vowels = region1 vowels . region1 vowels
 
 englishVowels :: [Char]
 englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
