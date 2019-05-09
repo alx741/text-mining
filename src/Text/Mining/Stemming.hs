@@ -2,42 +2,31 @@
 
 module Text.Mining.Stemming where
 
-import Data.Bool  (bool)
-import Data.List  (sortOn)
-import Data.Maybe (mapMaybe)
-import Data.Ord   (Down (..))
-import Data.Text  as T (Text, breakOn, cons, drop, dropEnd, findIndex, head,
-                        isSuffixOf, length, pack, replace, snoc, splitAt,
-                        stripSuffix, take, takeEnd, unpack)
-import Safe       (headMay)
-
-import Text.Mining.Diacritics (removeAcuteAccents, removeAllDiacritics)
+import Data.Bool              (bool)
+import Data.List              (sortOn)
+import Data.Ord               (Down (..))
+import Data.Text              as T (Text, cons, drop, dropEnd, findIndex, head,
+                                    isSuffixOf, length, pack, replace, snoc,
+                                    splitAt, take, takeEnd, unpack)
+import Text.Mining.Diacritics (removeAcuteAccents)
 
 stem :: Text -> Text
 stem = removeAcuteAccents
-    . removeResidualSuffix
-    . removeStandardSuffix
-    . removeAttachedPronoun
+     . removeResidualSuffix
+     . removeStandardSuffix
+     . removeAttachedPronoun
 
 
--- FIXME: Use longestSuffix
 -- | Step 0: Attached pronoun
 removeAttachedPronoun :: Text -> Text
 removeAttachedPronoun t =
-    case matchPrefix rv of
+    case longestSuffix suffixes t of
         Nothing -> t
-        Just (start, prefix) ->
-            case stripSuffixes prefix of
-                Nothing  -> base <> start <> prefix
-                Just end -> base <> start <> removeAllDiacritics end
+        Just suffix ->
+            let stripped = removeAcuteAccents $ base <> dropSuffix suffix rv
+            in bool t stripped (any (`isSuffixOf` stripped) prefixes)
     where
     (base, rv) = regionRV t
-
-    matchPrefix t' = headMay
-        $ filter (\(_, prefix) -> prefix /= "")
-        $ fmap (`breakOn` t') prefixes
-
-    stripSuffixes t' = headMay $ mapMaybe (`stripSuffix` t') suffixes
 
     prefixes =
         [ "iéndo", "ándo", "ár", "ér", "ír"
