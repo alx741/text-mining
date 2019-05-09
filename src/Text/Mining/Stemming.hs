@@ -85,3 +85,10 @@ region2 vowels = region1 vowels . region1 vowels
 
 englishVowels :: [Char]
 englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
+
+longestSuffix :: [Text] -> Text -> Maybe Text
+longestSuffix = findSuffix . sortOn (Down . T.length)
+    where
+        findSuffix :: [Text] -> Text -> Maybe Text
+        findSuffix [] _ = Nothing
+        findSuffix (x:xs) t = bool (findSuffix xs t) (Just x) (x `isSuffixOf` t)
