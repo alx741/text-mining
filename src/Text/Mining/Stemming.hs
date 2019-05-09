@@ -4,10 +4,11 @@ module Text.Mining.Stemming where
 
 import Data.Bool  (bool)
 import Data.List  (sortOn)
-import Data.Maybe (mapMaybe, fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Ord   (Down (..))
-import Data.Text  as T (Text, breakOn, cons, init, isSuffixOf, last, length,
-                        pack, span, splitAt, stripSuffix, unpack)
+import Data.Text  as T (Text, breakOn, cons, dropEnd, init, isSuffixOf, last,
+                        length, pack, replace, span, splitAt, stripSuffix,
+                        takeEnd, unpack)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeDiacritics)
@@ -15,22 +16,32 @@ import Text.Mining.Diacritics (removeDiacritics)
 spanishStem :: Text -> Text
 spanishStem = undefined
 
+-- | Drop a /suffix/ from a /text/
+-- If the /suffix/ is not found, the /text/ is left unchaned
+dropSuffix :: Text -> Text -> Text
+dropSuffix suffix t = bool t (dropEnd n t) (takeEnd n t == suffix)
+    where n = T.length suffix
+
 removeStandardSuffix :: Text -> Text
 removeStandardSuffix t =
     case longestSuffix allSuffixes r2 of
         Nothing -> t
         Just suffix
-            | suffix `elem` suffixesCase1 -> base <> (fromMaybe r2 $ stripSuffix suffix r2)
-            | suffix `elem` suffixesCase2 -> undefined
-            | suffix `elem` suffixesCase3 -> undefined
-            | suffix `elem` suffixesCase4 -> undefined
-            | suffix `elem` suffixesCase5 -> undefined
-            | suffix `elem` suffixesCase6 -> undefined
+            | suffix `elem` suffixesCase1 -> base <> dropSuffix suffix r2
+            | suffix `elem` suffixesCase2 -> dropSuffix "ic" $ base <> dropSuffix suffix r2
+            | suffix `elem` suffixesCase3 -> base <> replace suffix "log"  r2
+            | suffix `elem` suffixesCase4 -> base <> replace suffix "u"    r2
+            | suffix `elem` suffixesCase5 -> base <> replace suffix "ente" r2
+            | suffix `elem` suffixesCase6 ->
+                let stripped = base <> dropSuffix suffix r2
+                in case longestSuffix ["ativ", "iv", "os", "ic", "ad"] stripped of
+                    Nothing      -> stripped
+                    Just suffix' -> dropSuffix suffix' stripped
             | suffix `elem` suffixesCase7 -> undefined
             | suffix `elem` suffixesCase8 -> undefined
             | suffix `elem` suffixesCase9 -> undefined
     where
-        (base, r2) = undefined
+        whole@(base, r2) = undefined
 
         allSuffixes
             =  suffixesCase1 <> suffixesCase2 <> suffixesCase3
