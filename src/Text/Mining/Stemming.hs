@@ -2,9 +2,12 @@
 
 module Text.Mining.Stemming where
 
-import Data.Maybe (mapMaybe)
-import Data.Text  as T (Text, breakOn, cons, last, pack, span, splitAt,
-                        stripSuffix, unpack, init)
+import Data.Bool  (bool)
+import Data.List  (sortOn)
+import Data.Maybe (mapMaybe, fromMaybe)
+import Data.Ord   (Down (..))
+import Data.Text  as T (Text, breakOn, cons, init, isSuffixOf, last, length,
+                        pack, span, splitAt, stripSuffix, unpack)
 import Safe       (headMay)
 
 import Text.Mining.Diacritics (removeDiacritics)
@@ -12,6 +15,69 @@ import Text.Mining.Diacritics (removeDiacritics)
 spanishStem :: Text -> Text
 spanishStem = undefined
 
+removeStandardSuffix :: Text -> Text
+removeStandardSuffix t =
+    case longestSuffix allSuffixes r2 of
+        Nothing -> t
+        Just suffix
+            | suffix `elem` suffixesCase1 -> base <> (fromMaybe r2 $ stripSuffix suffix r2)
+            | suffix `elem` suffixesCase2 -> undefined
+            | suffix `elem` suffixesCase3 -> undefined
+            | suffix `elem` suffixesCase4 -> undefined
+            | suffix `elem` suffixesCase5 -> undefined
+            | suffix `elem` suffixesCase6 -> undefined
+            | suffix `elem` suffixesCase7 -> undefined
+            | suffix `elem` suffixesCase8 -> undefined
+            | suffix `elem` suffixesCase9 -> undefined
+    where
+        (base, r2) = undefined
+
+        allSuffixes
+            =  suffixesCase1 <> suffixesCase2 <> suffixesCase3
+            <> suffixesCase4 <> suffixesCase5 <> suffixesCase6
+            <> suffixesCase7 <> suffixesCase8 <> suffixesCase9
+
+        suffixesCase1 = -- Remove if in R2
+            [ "anza", "anzas", "ico", "ica", "icos", "icas", "ismo", "able"
+            , "ables", "ible", "ibles", "ista", "istas", "oso", "osa", "osos"
+            , "osas", "amiento", "amientos", "imiento", "imientos"
+            ]
+
+        suffixesCase2 = -- Remove if in R2, remove "ic" prefix
+            [ "adora", "ador", "ación", "adoras", "adores"
+            , "aciones", "ante", "antes", "ancia", "ancias"
+            ]
+
+        suffixesCase3 = -- Replace with "log" if in R2
+            ["logía", "logías"]
+
+        suffixesCase4 = -- Replace with "u" if in R2
+            ["ución", "uciones"]
+
+        suffixesCase5 = -- Replace with "ente" if in R2
+            ["encia", "encias"]
+
+        suffixesCase6 =
+            -- Remove if in R2
+            --   remove "iv" or "ativ" prefix
+            --   remove "os", "ic", "ad" prefixes
+            ["amente"]
+
+        suffixesCase7 =
+            -- Remove if in R2
+            --   remove "ante", "able", "ible" prefixes
+            ["mente"]
+
+        suffixesCase8 =
+            -- Remove if in R2
+            --   remove "abil", "ic", "iv" prefixes
+            ["idad", "idades"]
+
+        suffixesCase9 = -- Remove if in R2, remove "at" prefix
+            ["iva", "ivo", "ivas", "ivos"]
+
+
+-- FIXME: Use longestSuffix
 removeAttachedPronoun :: Text -> Text
 removeAttachedPronoun t =
     case matchPrefix rv of
