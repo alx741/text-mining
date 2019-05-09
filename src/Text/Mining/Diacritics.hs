@@ -2,11 +2,16 @@ module Text.Mining.Diacritics where
 
 import Data.Text as T (Text, map)
 
-removeDiacritics :: Text -> Text
-removeDiacritics = T.map unDiacritic
+removeAllDiacritics :: Text -> Text
+removeAllDiacritics
+    = removeTildes
+    . removeDiaeresis
+    . removeAcuteAccents
+
+removeAcuteAccents :: Text -> Text
+removeAcuteAccents = T.map unDiacritic
     where
         unDiacritic :: Char -> Char
-        -- Acute accent
         unDiacritic 'Á' = 'A'
         unDiacritic 'É' = 'E'
         unDiacritic 'Í' = 'I'
@@ -17,8 +22,12 @@ removeDiacritics = T.map unDiacritic
         unDiacritic 'í' = 'i'
         unDiacritic 'ó' = 'o'
         unDiacritic 'ú' = 'u'
+        unDiacritic x   = x
 
-        -- Diaeresis
+removeDiaeresis :: Text -> Text
+removeDiaeresis = T.map unDiacritic
+    where
+        unDiacritic :: Char -> Char
         unDiacritic 'Ä' = 'A'
         unDiacritic 'Ë' = 'E'
         unDiacritic 'Ï' = 'I'
@@ -29,9 +38,12 @@ removeDiacritics = T.map unDiacritic
         unDiacritic 'ï' = 'i'
         unDiacritic 'ö' = 'o'
         unDiacritic 'ü' = 'u'
+        unDiacritic x   = x
 
-        -- Tilde
+removeTildes :: Text -> Text
+removeTildes = T.map unDiacritic
+    where
+        unDiacritic :: Char -> Char
         unDiacritic 'Ñ' = 'N'
         unDiacritic 'ñ' = 'n'
-
         unDiacritic x   = x

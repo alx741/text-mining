@@ -25,7 +25,7 @@ import Data.Text    (Text, strip, toLower, unwords, words)
 import Data.Text.IO (readFile)
 import Prelude      hiding (readFile, unwords, words)
 
-import Text.Mining.Diacritics (removeDiacritics)
+import Text.Mining.Diacritics (removeAllDiacritics)
 
 data StopWordsLexicon = StopWordsLexicon (Set Text)
 
@@ -45,7 +45,7 @@ removeStopWords (StopWordsLexicon lexicon)
 removeStopWordsIgnoreDiacritics :: StopWordsLexiconNoDiacritics -> Text -> Text
 removeStopWordsIgnoreDiacritics (StopWordsLexiconNoDiacritics lexicon)
     = unwords
-    . filter (\w -> not $ (removeDiacritics . toLower) w `member` lexicon)
+    . filter (\w -> not $ (removeAllDiacritics . toLower) w `member` lexicon)
     . words
 
 lexiconFromList :: [Text] -> StopWordsLexicon
@@ -55,7 +55,7 @@ lexiconFromListIgnoreDiacritics :: [Text] -> StopWordsLexiconNoDiacritics
 lexiconFromListIgnoreDiacritics
     = StopWordsLexiconNoDiacritics
     . fromList
-    . fmap (removeDiacritics . strip . toLower)
+    . fmap (removeAllDiacritics . strip . toLower)
 
 -- | Read a 'StopWordsLexicon' from a /one word per line/ file
 readLexiconFile :: FilePath -> IO StopWordsLexicon

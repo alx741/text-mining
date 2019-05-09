@@ -25,15 +25,15 @@ spec = do
             regionR2 englishVowels "sprinkled"     `shouldBe` ("sprinkled", "")
             regionR2 englishVowels "eucharist"     `shouldBe` ("euchar",    "ist")
 
-    -- describe "spanishStem" $ do
-    --     it "takes the stem from Spanish words" $ do
-    --         spanishStem "cheque"     `shouldBe` "chequ"
-    --         spanishStem "chequeo"    `shouldBe` "cheque"
-    --         spanishStem "cheques"    `shouldBe` "chequ"
-    --         spanishStem "chica"      `shouldBe` "chic"
-    --         spanishStem "torcer"     `shouldBe` "torc"
-    --         spanishStem "torear"     `shouldBe` "tor"
-    --         spanishStem "tormenta"   `shouldBe` "torment"
-    --         spanishStem "tormentas"  `shouldBe` "torment"
-    --         spanishStem "torre"      `shouldBe` "torr"
-    --         spanishStem "torrencial" `shouldBe` "torrencial"
+    describe "spanishStem" $ do
+        it "takes the stem from Spanish words" $ do
+            stem "cheque"     `shouldBe` "chequ"
+            stem "chequeo"    `shouldBe` "cheque"
+            stem "cheques"    `shouldBe` "chequ"
+            stem "chica"      `shouldBe` "chic"
+            stem "torcer"     `shouldBe` "torc"
+            stem "torear"     `shouldBe` "tor"
+            stem "tormenta"   `shouldBe` "torment"
+            stem "tormentas"  `shouldBe` "torment"
+            stem "torre"      `shouldBe` "torr"
+            stem "torrencial" `shouldBe` "torrencial"

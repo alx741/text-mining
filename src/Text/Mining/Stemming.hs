@@ -11,10 +11,14 @@ import Data.Text  as T (Text, breakOn, cons, dropEnd, head, isSuffixOf, length,
                         takeEnd, unpack)
 import Safe       (headMay)
 
-import Text.Mining.Diacritics (removeDiacritics)
+import Text.Mining.Diacritics (removeAcuteAccents, removeAllDiacritics)
 
-spanishStem :: Text -> Text
-spanishStem = undefined
+stem :: Text -> Text
+stem
+    = removeAcuteAccents
+    . removeResidualSuffix
+    . removeStandardSuffix
+    . removeAttachedPronoun
 
 
 -- FIXME: Use longestSuffix
@@ -26,7 +30,7 @@ removeAttachedPronoun t =
         Just (start, prefix) ->
             case stripSuffixes prefix of
                 Nothing  -> base <> start <> prefix
-                Just end -> base <> start <> removeDiacritics end
+                Just end -> base <> start <> removeAllDiacritics end
     where
     (base, rv) = regionRV t
 
@@ -70,7 +74,7 @@ removeStandardSuffix t =
             | suffix `elem` suffixesCase9 -> dropSuffix "at" $ base <> dropSuffix suffix r2
             | otherwise -> undefined -- do step 2a
     where
-        (base, r2) = undefined
+        (base, r2) = regionR2 spanishVowels t
 
         allSuffixes
             =  suffixesCase1 <> suffixesCase2 <> suffixesCase3
@@ -161,8 +165,7 @@ regionRV = takeRV . unpack
         takeRV word = (pack word, "")
 
         isVowel :: Char -> Bool
-        isVowel = flip elem
-            ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
+        isVowel = flip elem spanishVowels
 
 -- | Split a word on its R1 region
 --
@@ -196,6 +199,9 @@ regionR2 vowels word =
 
 englishVowels :: [Char]
 englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
+
+spanishVowels :: [Char]
+spanishVowels = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
 
 -- | Drop a /suffix/ from a /text/
 -- If the /suffix/ is not found, the /text/ is left unchanged
