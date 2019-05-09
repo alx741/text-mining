@@ -182,10 +182,17 @@ regionR1 vowels word = parseRegion (unpack word) ("", "")
         isVowel = flip elem vowels
 
 
--- region2 :: [Char] -- ^ List of vowels
--- -> Text -- ^ R1 (region1 of a word)
--- -> Text -- ^ Region
--- region2 vowels = region1 vowels . region1 vowels
+-- | Split a word on its R2 region
+--
+-- Defined in: http://snowball.tartarus.org/texts/r1r2.html
+regionR2 :: [Char] -- ^ Lost of vowels
+ -> Text -- ^ Word
+ -> (Text, Text) -- ^ (Base, R2)
+regionR2 vowels word =
+    let (base1, r1) = regionR1 vowels word
+        (base2, r2) = regionR1 vowels r1
+    in (base1 <> base2, r2)
+
 
 englishVowels :: [Char]
 englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
