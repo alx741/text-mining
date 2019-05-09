@@ -16,12 +16,8 @@ import Text.Mining.Diacritics (removeDiacritics)
 spanishStem :: Text -> Text
 spanishStem = undefined
 
--- | Drop a /suffix/ from a /text/
--- If the /suffix/ is not found, the /text/ is left unchaned
-dropSuffix :: Text -> Text -> Text
-dropSuffix suffix t = bool t (dropEnd n t) (takeEnd n t == suffix)
-    where n = T.length suffix
 
+-- | Step 1: Standard suffix removal
 removeStandardSuffix :: Text -> Text
 removeStandardSuffix t =
     case longestSuffix allSuffixes r2 of
@@ -34,11 +30,13 @@ removeStandardSuffix t =
             | suffix `elem` suffixesCase5 -> base <> replace suffix "ente" r2
             | suffix `elem` suffixesCase6 ->
                 let stripped = base <> dropSuffix suffix r2
-                in case longestSuffix ["ativ", "iv", "os", "ic", "ad"] stripped of
-                    Nothing      -> stripped
-                    Just suffix' -> dropSuffix suffix' stripped
-            | suffix `elem` suffixesCase7 -> undefined
-            | suffix `elem` suffixesCase8 -> undefined
+                in dropLongestSuffix ["ativ", "iv", "os", "ic", "ad"] stripped
+            | suffix `elem` suffixesCase7 ->
+                let stripped = base <> dropSuffix suffix r2
+                in dropLongestSuffix ["ante", "able", "ible"] stripped
+            | suffix `elem` suffixesCase8 ->
+                let stripped = base <> dropSuffix suffix r2
+                in dropLongestSuffix ["abil", "ic", "iv"] stripped
             | suffix `elem` suffixesCase9 -> undefined
     where
         whole@(base, r2) = undefined
@@ -163,6 +161,22 @@ region2 vowels = region1 vowels . region1 vowels
 englishVowels :: [Char]
 englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
 
+-- | Drop a /suffix/ from a /text/
+-- If the /suffix/ is not found, the /text/ is left unchanged
+dropSuffix :: Text -> Text -> Text
+dropSuffix suffix t = bool t (dropEnd n t) (takeEnd n t == suffix)
+    where n = T.length suffix
+
+-- | Drop the longest /suffix/ in the list from a /text/
+-- If none of the /suffixes/ is not found, the /text/ is left unchanged
+dropLongestSuffix :: [Text] -> Text -> Text
+dropLongestSuffix suffixes t =
+    case longestSuffix suffixes t of
+        Nothing     -> t
+        Just suffix -> dropSuffix suffix t
+
+-- | Just the longest suffix in a /text/
+-- Nothing if none of the suffixes is found in the /text/
 longestSuffix :: [Text] -> Text -> Maybe Text
 longestSuffix = findSuffix . sortOn (Down . T.length)
     where
