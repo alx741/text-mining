@@ -25,6 +25,13 @@ spec = do
             regionR2 englishVowels "sprinkled"     `shouldBe` ("sprinkled", "")
             regionR2 englishVowels "eucharist"     `shouldBe` ("euchar",    "ist")
 
+    describe "regionRV" $ do
+        it "Takes the base and Spanish RV region of a word" $ do
+            regionRV "macho"   `shouldBe` ("mac", "ho")
+            regionRV "oliva"   `shouldBe` ("oli", "va")
+            regionRV "trabajo" `shouldBe` ("tra", "bajo")
+            regionRV "áureo"   `shouldBe` ("áur", "eo")
+
     describe "spanishStem" $ do
         it "takes the stem from Spanish words" $ do
             stem "che"            `shouldBe` "che"
