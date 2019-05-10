@@ -38,22 +38,22 @@ regionR2 vowels word =
     in (base1 <> base2, r2)
 
 
--- | Drop a /suffix/ from a /text/
--- If the /suffix/ is not found, the /text/ is left unchanged
+-- | Drop a /suffix/ from a /word/
+-- If the /suffix/ is not found, the /word/ is left unchanged
 dropSuffix :: Text -> Text -> Text
 dropSuffix suffix t = bool t (dropEnd n t) (takeEnd n t == suffix)
     where n = T.length suffix
 
--- | Drop the longest /suffix/ in the list from a /text/
--- If none of the /suffixes/ is not found, the /text/ is left unchanged
+-- | Drop the longest /suffix/ in the list from a /word/
+-- If none of the /suffixes/ is not found, the /word/ is left unchanged
 dropLongestSuffix :: [Text] -> Text -> Text
 dropLongestSuffix suffixes t =
     case longestSuffix suffixes t of
         Nothing     -> t
         Just suffix -> dropSuffix suffix t
 
--- | Just the longest suffix in a /text/
--- Nothing if none of the suffixes is found in the /text/
+-- | Just the longest suffix in a /word/
+-- Nothing if none of the suffixes is found in the /word/
 longestSuffix :: [Text] -> Text -> Maybe Text
 longestSuffix = findSuffix . sortOn (Down . T.length)
     where

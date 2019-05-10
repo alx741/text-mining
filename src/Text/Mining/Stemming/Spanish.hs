@@ -15,6 +15,9 @@ import Text.Mining.Diacritics      (removeAcuteAccents)
 import Text.Mining.Stemming.Common (dropLongestSuffix, dropSuffix,
                                     longestSuffix, regionR2)
 
+-- | Take the stem of a Spanish word
+--
+-- Defined in: http://snowball.tartarus.org/algorithms/spanish/stemmer.html
 stem :: Text -> Text
 stem = removeAcuteAccents
      . removeResidualSuffix
