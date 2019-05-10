@@ -1,3 +1,6 @@
 .stack-work/
 text-mining.cabal
 *~
+
+*.hi
+*.o
