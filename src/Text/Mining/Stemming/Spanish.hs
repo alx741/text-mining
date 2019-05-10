@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Text.Mining.Stemming where
+module Text.Mining.Stemming.Spanish where
 
-import Data.Bool              (bool)
-import Data.List              (sortOn)
-import Data.Ord               (Down (..))
-import Data.Text              as T (Text, cons, drop, dropEnd, findIndex, head,
-                                    isSuffixOf, length, pack, replace, snoc,
-                                    splitAt, take, takeEnd, unpack)
-import Text.Mining.Diacritics (removeAcuteAccents)
+import Data.Bool (bool)
+import Data.Text as T (Text, cons, drop, findIndex, head, isSuffixOf, pack,
+                       replace, splitAt, take, unpack)
+
+import Text.Mining.Diacritics      (removeAcuteAccents)
+import Text.Mining.Stemming.Common (dropLongestSuffix, dropSuffix,
+                                    longestSuffix, regionR2)
 
 stem :: Text -> Text
 stem = removeAcuteAccents
@@ -16,6 +16,8 @@ stem = removeAcuteAccents
      . removeStandardSuffix
      . removeAttachedPronoun
 
+vowels :: [Char]
+vowels = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
 
 -- | Step 0: Attached pronoun
 removeAttachedPronoun :: Text -> Text
@@ -62,7 +64,7 @@ removeStandardSuffix t =
             | suffix `elem` suffixesCase9 -> dropSuffix "at" $ base <> dropSuffix suffix r2
             | otherwise -> removeYVerbSuffixes t
     where
-        (base, r2) = regionR2 spanishVowels t
+        (base, r2) = regionR2 vowels t
 
         allSuffixes
             =  suffixesCase1 <> suffixesCase2 <> suffixesCase3
@@ -219,64 +221,4 @@ regionRV = takeRV . unpack
                 Just n  -> (T.take n t, T.drop n t)
 
         isVowel :: Char -> Bool
-        isVowel = flip elem spanishVowels
-
-
--- | Split a word on its R1 region
---
--- Defined in: http://snowball.tartarus.org/texts/r1r2.html
-regionR1 :: [Char] -- ^ Lost of vowels
- -> Text -- ^ Word
- -> (Text, Text) -- ^ (Base, R1)
-regionR1 vowels word = parseRegion (unpack word) ("", "")
-    where
-        parseRegion :: String -> (Text, Text) -> (Text, Text)
-        parseRegion (x:y:xs) (b, r1)
-            | isVowel x && (not . isVowel) y = (b `snoc` x `snoc` y, pack xs)
-            | otherwise = parseRegion (y:xs) (b `snoc` x, r1)
-        parseRegion [x] (b, r1) = (b `snoc` x, r1)
-        parseRegion []  (b, r1) = (b, r1)
-
         isVowel = flip elem vowels
-
-
--- | Split a word on its R2 region
---
--- Defined in: http://snowball.tartarus.org/texts/r1r2.html
-regionR2 :: [Char] -- ^ Lost of vowels
- -> Text -- ^ Word
- -> (Text, Text) -- ^ (Base, R2)
-regionR2 vowels word =
-    let (base1, r1) = regionR1 vowels word
-        (base2, r2) = regionR1 vowels r1
-    in (base1 <> base2, r2)
-
-
-englishVowels :: [Char]
-englishVowels = ['a', 'e', 'i', 'o', 'u', 'y']
-
-spanishVowels :: [Char]
-spanishVowels = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
-
--- | Drop a /suffix/ from a /text/
--- If the /suffix/ is not found, the /text/ is left unchanged
-dropSuffix :: Text -> Text -> Text
-dropSuffix suffix t = bool t (dropEnd n t) (takeEnd n t == suffix)
-    where n = T.length suffix
-
--- | Drop the longest /suffix/ in the list from a /text/
--- If none of the /suffixes/ is not found, the /text/ is left unchanged
-dropLongestSuffix :: [Text] -> Text -> Text
-dropLongestSuffix suffixes t =
-    case longestSuffix suffixes t of
-        Nothing     -> t
-        Just suffix -> dropSuffix suffix t
-
--- | Just the longest suffix in a /text/
--- Nothing if none of the suffixes is found in the /text/
-longestSuffix :: [Text] -> Text -> Maybe Text
-longestSuffix = findSuffix . sortOn (Down . T.length)
-    where
-        findSuffix :: [Text] -> Text -> Maybe Text
-        findSuffix [] _ = Nothing
-        findSuffix (x:xs) t = bool (findSuffix xs t) (Just x) (x `isSuffixOf` t)
