@@ -1,6 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Text.Mining.Stemming.Spanish where
+module Text.Mining.Stemming.Spanish
+    ( stem
+    , regionRV
+    , vowels
+    )
+    where
 
 import Data.Bool (bool)
 import Data.Text as T (Text, cons, drop, findIndex, head, isSuffixOf, pack,
@@ -16,6 +21,41 @@ stem = removeAcuteAccents
      . removeStandardSuffix
      . removeAttachedPronoun
 
+
+-- | Split a word on its Spanish RV region
+--
+-- Defined in: http://snowball.tartarus.org/algorithms/spanish/stemmer.html
+regionRV :: Text -> (Text, Text)
+regionRV = takeRV . unpack
+    where
+        takeRV :: String -> (Text, Text)
+        takeRV [x,y] = (pack $ x:[y], "")
+        takeRV word@(x:y:xs)
+            | not (isVowel y) =
+                let (prefix, region) = breakOnVowel $ pack xs
+                in (x `cons` y `cons` prefix, region)
+            | isVowel x && isVowel y =
+                let (prefix, region) = breakOnConsonant $ pack xs
+                in (x `cons` y `cons` prefix, region)
+            | otherwise = T.splitAt 3 $ pack word
+        takeRV word = (pack word, "")
+
+        breakOnVowel :: Text -> (Text, Text)
+        breakOnVowel = breakOnPredicate isVowel
+
+        breakOnConsonant :: Text -> (Text, Text)
+        breakOnConsonant = breakOnPredicate (not . isVowel)
+
+        breakOnPredicate :: (Char -> Bool) -> Text -> (Text, Text)
+        breakOnPredicate p t = let mn = (+1) <$> findIndex p t
+            in case mn of
+                Nothing -> (t, "")
+                Just n  -> (T.take n t, T.drop n t)
+
+        isVowel :: Char -> Bool
+        isVowel = flip elem vowels
+
+-- | Spanish vowels
 vowels :: [Char]
 vowels = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'ü']
 
@@ -190,35 +230,3 @@ removeResidualSuffix t =
 
         suffixesCase2 = -- Remove if in RV, if prefixed by "gu" remove "u" in RV
             ["e", "é"]
-
-
--- | Split a word on its Spanish RV region
-regionRV :: Text -> (Text, Text)
-regionRV = takeRV . unpack
-    where
-        takeRV :: String -> (Text, Text)
-        takeRV [x,y] = (pack $ x:[y], "")
-        takeRV word@(x:y:xs)
-            | not (isVowel y) =
-                let (prefix, region) = breakOnVowel $ pack xs
-                in (x `cons` y `cons` prefix, region)
-            | isVowel x && isVowel y =
-                let (prefix, region) = breakOnConsonant $ pack xs
-                in (x `cons` y `cons` prefix, region)
-            | otherwise = T.splitAt 3 $ pack word
-        takeRV word = (pack word, "")
-
-        breakOnVowel :: Text -> (Text, Text)
-        breakOnVowel = breakOnPredicate isVowel
-
-        breakOnConsonant :: Text -> (Text, Text)
-        breakOnConsonant = breakOnPredicate (not . isVowel)
-
-        breakOnPredicate :: (Char -> Bool) -> Text -> (Text, Text)
-        breakOnPredicate p t = let mn = (+1) <$> findIndex p t
-            in case mn of
-                Nothing -> (t, "")
-                Just n  -> (T.take n t, T.drop n t)
-
-        isVowel :: Char -> Bool
-        isVowel = flip elem vowels
