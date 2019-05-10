@@ -1,5 +1,7 @@
 # A Haskell text mining library
 
+[![CircleCI](https://img.shields.io/circleci/project/github/alx741/text-mining/master.svg)](https://circleci.com/gh/alx741/text-mining)
+
 <img alt="logo" src="./logo/logo.png" width="200">
 
 Basic text mining computations
