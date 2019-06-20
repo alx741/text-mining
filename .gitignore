@@ -2,5 +2,8 @@
 text-mining.cabal
 *~
 
+.ghc.*
+dist-newstyle/
+
 *.hi
 *.o
